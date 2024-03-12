@@ -1,4 +1,4 @@
-name: Develop to Release PR and Tag
+name: Automate PR from Develop to Release
 
 on:
   push:
@@ -49,4 +49,4 @@ jobs:
           pr_body: "Automated PR to merge changes from develop to release."
           pr_label: "automated-pr"
           destination_branch: "release/$next_version"
-          source_branch: "develop
+          source_branch: "develop"
