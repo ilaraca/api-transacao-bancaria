@@ -54,12 +54,7 @@ jobs:
 
       - name: Create Release Branch
         run: |
-          if git tag | grep -q "${{ steps.get_tag.outputs.tag }}"; then
-            next_version="${{ steps.get_tag.outputs.tag }}"
-          else
-            echo "Tag ${{ steps.get_tag.outputs.tag }} does not exist. Exiting."
-            exit 1
-          fi
+          next_version="${{ steps.create_tag.outputs.next_version }}"
           branch_name="release/$next_version"
           git checkout -b $branch_name $next_version
           git push origin $branch_name
