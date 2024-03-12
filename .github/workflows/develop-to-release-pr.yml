@@ -56,7 +56,7 @@ jobs:
 
       - name: Create Release Branch
         run: |
-          next_version="${{ steps.create_tag.outputs.next_version }}"  # Utiliza o output do passo anterior
+          next_version="${{ steps.create_tag.outputs.next_version }}"  # Utiliza o output do passo anterior 
           branch_name="release/$next_version"
           git checkout -b $branch_name $next_version
           git push origin $branch_name
