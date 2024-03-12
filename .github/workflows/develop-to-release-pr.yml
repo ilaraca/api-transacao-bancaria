@@ -67,5 +67,5 @@ jobs:
           pr_title: "Merge Develop into Release"
           pr_body: "Automated PR to merge changes from develop to release."
           pr_label: "automated-pr"
-          destination_branch: "release/$next_version"
+          destination_branch: "release/${{ steps.create_tag.outputs.next_version }}"
           source_branch: "develop"
