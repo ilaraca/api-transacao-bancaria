@@ -41,8 +41,8 @@ jobs:
 
       - name: Create Release Branch
         run: |
-          git checkout -b release/$next_version $next_version
-          git push origin release/$next_version
+          git checkout -b release-${next_version} ${next_version}
+          git push origin release-${next_version}
 
       - name: Create Pull Request to Release
         uses: repo-sync/pull-request@v2
