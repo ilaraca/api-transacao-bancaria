@@ -1,0 +1,36 @@
+name: Tag on Release
+
+on:
+  push:
+    branches:
+      - release
+
+jobs:
+  create-tag:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+
+      - name: Setup Git
+        run: |
+          git config --global user.name 'github-actions'
+          git config --global user.email 'github-actions@github.com'
+
+      - name: Generate tag
+        id: tagger
+        uses: anothrNick/github-tag-action@1.26.0
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          # Opções de configuração, como escolher o tipo de incremento (major, minor, patch)
+          DEFAULT_BUMP: minor
+          # Coloque WITH_V se quiser que a tag seja prefixada com 'v', ex: v1.0.0
+          WITH_V: true
+          # Outras opções podem ser configuradas conforme necessário.
+
+      - name: Create GitHub Release
+        if: steps.tagger.outputs.new_tag != ''
+        uses: actions/create-release@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          tag_name: $
