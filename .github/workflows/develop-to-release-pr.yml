@@ -38,7 +38,7 @@ jobs:
           fi
 
       - name: Create Tag and Push
-        id: create_tag  # Adiciona um ID a este passo para poder referenciá-lo mais tarde
+        id: create_tag  # Adiciona um ID a este passo para poder referenciá-lo mais tardes
         run: |
           if git tag | grep -q "${{ steps.get_tag.outputs.tag }}"; then
             echo "Tag ${{ steps.get_tag.outputs.tag }} already exists. Incrementing version."
