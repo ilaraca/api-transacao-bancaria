@@ -6,55 +6,47 @@ on:
       - develop
 
 jobs:
-  check_or_create_release_branch:
+  create_pr_to_release:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code
         uses: actions/checkout@v2
 
-      - name: Configurar usuário Git
+      - name: Get Latest Tag
+        id: get_tag
         run: |
-          git config --global user.email "you@example.com"
-          git config --global user.name "Your Name"
+          latest_tag=$(git describe --tags --abbrev=0)
+          echo "::set-output name=tag::$latest_tag"
 
-      - name: Verificar a branch 'release'
+      - name: Check if Tag Exists
         run: |
-          if ! git ls-remote --heads origin release | grep release; then
-            git branch release
-            git checkout release
-            git push origin release
-            echo "Branch 'release' foi criada e publicada."
+          if git tag | grep -q "${{ steps.get_tag.outputs.tag }}"; then
+            echo "Tag ${{ steps.get_tag.outputs.tag }} already exists. Incrementing version."
+            # Incrementa a versão para a próxima
+            current_version=${{ steps.get_tag.outputs.tag }}
+            next_version=$(echo $current_version | awk -F. '{$NF = $NF + 1;} 1' | sed 's/ /./g')
+            echo "Next version: $next_version"
           else
-            echo "Branch 'release' já existe."
+            echo "Tag ${{ steps.get_tag.outputs.tag }} does not exist. Creating a new tag."
+            next_version="${{ steps.get_tag.outputs.tag }}"
           fi
-  create_pull_request:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v2
 
-      - name: Create Pull Request
+      - name: Create Tag and Push
+        run: |
+          git tag $next_version
+          git push origin $next_version
+
+      - name: Create Release Branch
+        run: |
+          git checkout -b release/$next_version $next_version
+          git push origin release/$next_version
+
+      - name: Create Pull Request to Release
         uses: repo-sync/pull-request@v2
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
-          pr_title: "Promote Develop to Release"
-          pr_body: "This is an automated PR to promote changes from develop to release."
-          pr_label: "automate-pr"
-          destination_branch: "release"
-          source_branch: "develop"
-
-  create_tag:
-    needs: create_pull_request
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v2
-        with:
-          fetch-depth: 0  # Ensures tags are fetched
-
-      - name: Create Tag
-        uses: anothrNick/github-tag-action@1.39.0
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          WITH_V: true  # Prefix the tag with 'v'. Set to false to omit.
-          DEFAULT_BUMP: minor  # Default to 'minor' version bump. Other options: 'major', 'minor', 'patch'
-          RELEASE_BRANCHES: release  # Only creates a tag if the branch is 'release'
-          DRY_RUN: false  # Set to true to simulate the action without making any changes
+          pr_title: "Merge Develop into Release"
+          pr_body: "Automated PR to merge changes from develop to release."
+          pr_label: "automated-pr"
+          destination_branch: "release/$next_version"
+          source_branch: "develop
