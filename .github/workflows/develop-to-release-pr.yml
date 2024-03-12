@@ -38,6 +38,7 @@ jobs:
           fi
 
       - name: Create Tag and Push
+        id: create_tag  # Adiciona um ID a este passo para poder referenciá-lo mais tarde
         run: |
           if git tag | grep -q "${{ steps.get_tag.outputs.tag }}"; then
             echo "Tag ${{ steps.get_tag.outputs.tag }} already exists. Incrementing version."
@@ -49,15 +50,17 @@ jobs:
             echo "Tag ${{ steps.get_tag.outputs.tag }} does not exist. Creating a new tag."
             next_version="${{ steps.get_tag.outputs.tag }}"
           fi
+          echo "::set-output name=next_version::$next_version"  # Define o valor de next_version como output
           git tag $next_version
           git push origin $next_version
 
       - name: Create Release Branch
         run: |
-          next_version="${{ steps.create_tag.outputs.next_version }}"
-          branch_name="release-$next_version"
+          next_version="${{ steps.create_tag.outputs.next_version }}"  # Utiliza o output do passo anterior
+          branch_name="release/$next_version"
           git checkout -b $branch_name $next_version
           git push origin $branch_name
+
       - name: Create Pull Request to Release
         uses: repo-sync/pull-request@v2
         with:
