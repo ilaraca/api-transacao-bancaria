@@ -1,0 +1,20 @@
+name: Release to Main
+
+on:
+  push:
+    branches:
+      - 'release'
+
+jobs:
+  release_to_main:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      pull-requests: write
+    steps:
+      - uses: actions/checkout@v2
+      - name: Merge release to main
+        run: |
+          git checkout main
+          git merge --no-ff release
+          git push origin main
